@@ -9,7 +9,14 @@ function App() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [total, setTotal] = useState([]);
-  const [counter, setCounter] = useState(0);
+
+  const charge = 2.5;
+
+  const sousTotal = total.reduce((result, item) => {
+    return result + item.price * item.qty;
+  }, 0);
+
+  const finalTotal = sousTotal + charge;
 
   const shorteringString = str => {
     if (str.length > 80) {
@@ -40,61 +47,98 @@ function App() {
       <Header />
       <Hero infos={data.restaurant} />
       <main>
-        {data.categories.map((category, index) => {
-          return (
-            category.meals.length > 0 && (
-              <section className="category container">
-                <h2 key={index}>{category.name}</h2>
-                <div>
-                  {category.meals.map((element, id) => {
-                    return (
-                      <article
-                        key={id}
-                        onClick={() => {
-                          console.log(element);
+        <div className="container">
+          <div>
+            {data.categories.map((category, index) => {
+              return (
+                category.meals.length > 0 && (
+                  <section className="category ">
+                    <h2 key={index}>{category.name}</h2>
+                    <div>
+                      {category.meals.map((element, id) => {
+                        return (
+                          <article
+                            key={id}
+                            onClick={() => {
+                              console.log(element);
+                              const copy = [...total];
+                              copy.push({ ...element, qty: 1 });
+                              setTotal(copy);
+                            }}
+                          >
+                            <div>
+                              <h3>{element.title}</h3>
+                              <p>{shorteringString(element.description)}</p>
+                              <p>{element.price} €</p>
+                              {element.popular && (
+                                <p className="popular">
+                                  <FaStar />
+                                  Populaire
+                                </p>
+                              )}
+                            </div>
+                            {element.picture ? (
+                              <img
+                                src={element.picture}
+                                alt="photo-restaurant"
+                              />
+                            ) : null}
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )
+              );
+            })}
+          </div>
+          <aside className="bucket">
+            <button>Valider mon panier</button>
+            {total.map((element, index) => {
+              return (
+                <div className="articleBucket" key={index}>
+                  <div className="addless">
+                    <button
+                      onClick={() => {
+                        if (element.qty > 0) {
                           const copy = [...total];
-                          copy.push(element);
+                          copy[index] = { ...element, qty: element.qty - 1 };
                           setTotal(copy);
-                          setCounter(counter + 1);
-                        }}
-                      >
-                        <div>
-                          <h3>{element.title}</h3>
-                          <p>{shorteringString(element.description)}</p>
-                          <p>{element.price} €</p>
-                          {element.popular && (
-                            <p className="popular">
-                              <FaStar />
-                              Populaire
-                            </p>
-                          )}
-                        </div>
-                        {element.picture ? (
-                          <img src={element.picture} alt="photo-restaurant" />
-                        ) : null}
-                      </article>
-                    );
-                  })}
+                        }
+                      }}
+                    >
+                      -
+                    </button>
+                    <p>{element.qty}</p>
+                    <button
+                      onClick={() => {
+                        const copy = [...total];
+                        copy[index] = { ...element, qty: element.qty + 1 };
+                        setTotal(copy);
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p>{element.title}</p>
+                  <p>{element.price * element.qty}€</p>
                 </div>
-              </section>
-            )
-          );
-        })}
-
-        <aside className="bucket">
-          <button>Valider mon panier</button>
-          {total.map(element => {
-            return (
-              <div>
-                <button>-</button>
-                <p>{counter}</p>
-                <button>+</button>
-                <p>{element.title}</p>
-                <p>{element.price}</p>
-              </div>
-            );
-          })}
-        </aside>
+              );
+            })}
+            <div className="sous-total">
+              <p>Sous-total</p>
+              <div>{sousTotal}€</div>
+            </div>
+            <div className="charges">
+              <p>Frais de livraison </p>
+              <div>{charge}€</div>
+            </div>
+            <div className="total">
+              <p>Total</p>
+              <div>{finalTotal}€</div>
+            </div>
+          </aside>
+        </div>
       </main>
     </>
   );
